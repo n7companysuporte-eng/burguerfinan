@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BurgerControl Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-zinc-950 text-white p-4">
+
+  <h1 class="text-3xl font-bold mb-6">🍔 BurgerControl Pro</h1>
+
+  <!-- NAV -->
+  <div class="flex gap-2 mb-6">
+    <button onclick="setTab('dashboard')" class="tab-btn bg-orange-500 px-4 py-2 rounded-xl">Dashboard</button>
+    <button onclick="setTab('estoque')" class="tab-btn bg-zinc-800 px-4 py-2 rounded-xl">Estoque</button>
+    <button onclick="setTab('vendas')" class="tab-btn bg-zinc-800 px-4 py-2 rounded-xl">Vendas</button>
+    <button onclick="setTab('financeiro')" class="tab-btn bg-zinc-800 px-4 py-2 rounded-xl">Financeiro</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="dashboard" class="tab">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-zinc-900 p-4 rounded-2xl"><p>Faturamento</p><h2 id="fat">R$ 0</h2></div>
+      <div class="bg-zinc-900 p-4 rounded-2xl"><p>Lucro</p><h2 id="lucro">R$ 0</h2></div>
+      <div class="bg-zinc-900 p-4 rounded-2xl"><p>Pedidos</p><h2 id="pedidos">0</h2></div>
+    </div>
+  </div>
+
+  <!-- ESTOQUE -->
+  <div id="estoque" class="tab hidden">
+    <div class="flex gap-2 mb-4">
+      <input id="nomeItem" placeholder="Nome" class="p-2 rounded bg-zinc-800">
+      <input id="qtdItem" placeholder="Qtd" class="p-2 rounded bg-zinc-800">
+      <button onclick="addItem()" class="bg-orange-500 px-4 rounded">Adicionar</button>
+    </div>
+    <div id="listaEstoque" class="space-y-2"></div>
+  </div>
+
+  <!-- VENDAS -->
+  <div id="vendas" class="tab hidden">
+    <button onclick="addVenda()" class="bg-green-500 px-4 py-2 rounded mb-4">Nova Venda</button>
+    <div id="listaVendas" class="space-y-2"></div>
+  </div>
+
+  <!-- FINANCEIRO -->
+  <div id="financeiro" class="tab hidden">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="bg-zinc-900 p-4 rounded-2xl"><p>Receita</p><h2 id="receita">R$ 0</h2></div>
+      <div class="bg-zinc-900 p-4 rounded-2xl"><p>Despesas</p><h2 id="despesas">R$ 0</h2></div>
+      <div class="bg-zinc-900 p-4 rounded-2xl"><p>Lucro</p><h2 id="lucro2">R$ 0</h2></div>
+    </div>
+  </div>
+
+<script>
+let estoque = JSON.parse(localStorage.getItem('estoque')) || []
+let vendas = JSON.parse(localStorage.getItem('vendas')) || []
+
+function saveData(){
+  localStorage.setItem('estoque', JSON.stringify(estoque))
+  localStorage.setItem('vendas', JSON.stringify(vendas))
+}
+
+function setTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.add('hidden'))
+  document.getElementById(tab).classList.remove('hidden')
+}
+
+function addItem() {
+  const nome = document.getElementById('nomeItem').value
+  const qtd = parseInt(document.getElementById('qtdItem').value)
+
+  if(!nome || !qtd) return
+
+  estoque.push({nome, qtd})
+  saveData()
+  renderEstoque()
+}
+
+function renderEstoque() {
+  const lista = document.getElementById('listaEstoque')
+  lista.innerHTML = ''
+
+  estoque.forEach((item, i) => {
+    lista.innerHTML += `<div class="bg-zinc-900 p-3 rounded-xl flex justify-between">
+      <span>${item.nome}</span>
+      <span>${item.qtd}</span>
+    </div>`
+  })
+}
+
+function addVenda() {
+  const valor = Math.floor(Math.random() * 30) + 10
+  vendas.push({valor})
+  saveData()
+  renderVendas()
+  atualizarDashboard()
+}
+
+function renderVendas() {
+  const lista = document.getElementById('listaVendas')
+  lista.innerHTML = ''
+
+  vendas.forEach(v => {
+    lista.innerHTML += `<div class="bg-zinc-900 p-3 rounded-xl">Venda: R$ ${v.valor}</div>`
+  })
+}
+
+function atualizarDashboard() {
+  const faturamento = vendas.reduce((a,b) => a + b.valor, 0)
+  const despesas = faturamento * 0.4
+  const lucro = faturamento - despesas
+
+  document.getElementById('fat').innerText = 'R$ ' + faturamento
+  document.getElementById('lucro').innerText = 'R$ ' + lucro
+  document.getElementById('lucro2').innerText = 'R$ ' + lucro
+  document.getElementById('receita').innerText = 'R$ ' + faturamento
+  document.getElementById('despesas').innerText = 'R$ ' + despesas
+  document.getElementById('pedidos').innerText = vendas.length
+}
+
+// INIT
+renderEstoque()
+renderVendas()
+atualizarDashboard()
+</script>
+
+</body>
+</html>
